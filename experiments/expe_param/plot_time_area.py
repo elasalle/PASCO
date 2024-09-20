@@ -38,7 +38,6 @@ if __name__ == '__main__':
     rhos = [3,5,10,15] 
     # rhos = results["rhos"] # for the next run
 
-
     nx = len(rhos)
     nrep = 10
     # nrep = results["nrep"]
@@ -46,7 +45,6 @@ if __name__ == '__main__':
     co_times = np.zeros(nx+1)
     cl_times = np.zeros(nx+1)
     fu_times = np.zeros(nx+1)
-
     
     cl_times[0] = np.mean([results[iz][irep]["SC"]["time"] for irep in range(nrep)])
     for ix in range(nx):
@@ -69,11 +67,9 @@ if __name__ == '__main__':
     # Add labels and legend
     plt.xlabel(r'$\rho$')
     plt.ylabel('time')
-    plt.title('k = {}'.format(k))
     plt.xticks(xvalues)
-    # plt.grid()
     plt.legend()
 
-
+    # Save plot
     figname = "timings_stacked_area"+"_n"+str(n)+"_k"+str(k)+".pdf"
     plt.savefig(plots_dir+figname)
