@@ -69,7 +69,6 @@ def ot_alignment(ref, partition, to_log=False):
         It satisfies: ref.sum(axis=1)=1.
     partition : array_type of shape (n,)
         The partition to align w.r.t. ref. The node i is assigned to cluster partition[i]
-    use_weights: bool, optional
 
     Returns
     -------
@@ -86,15 +85,11 @@ def ot_alignment(ref, partition, to_log=False):
     # uniform weights
     a = np.ones(k) / k
     b = np.ones(output_nb_clusters) / output_nb_clusters  
-    
+
     st = time.time()
     T = ot.emd(a, b, C)
     ed = time.time()
-    # we multiply by k in order to have {0, 1} entries, but should not have
-    # an impact MAYBE TO REMOVE
-    # if k == output_nb_clusters:
-    #     aligned_partition = P @ (k * T)
-    # else:
+    
     aligned_partition = P @ T
 
     if to_log:
@@ -183,11 +178,12 @@ def align_and_fuse(partitions, ref, method_alignment, method_fusion="majority_vo
     fused_partition = np.zeros((n, output_nb_clusters))
     aligned_partitions = []
 
+    # compute the barycenter of the aligned partition matrices
     for i, partition in enumerate(partitions):
         aligned_partition = method_alignment(ref, partition)
-        fused_partition += aligned_partition  # will become the mean
+        fused_partition += aligned_partition  
         aligned_partitions.append(aligned_partition)
-    fused_partition /= n_tables  # now, this is similar to np.mean
+    fused_partition /= n_tables  
 
     if method_fusion == "majority_vote" or method_fusion == "soft_majority_vote":
         return fused_partition, aligned_partitions
@@ -316,7 +312,7 @@ class Fusion:
             self.alignment_method = many_to_one_alignment
         elif self.method_align == "ot":
             self.alignment_method = lambda ref, partition: ot_alignment(
-                ref, partition, use_weights=False)
+                ref, partition)
         else:
             raise FuParameterError(
                 " The alignment method {} does not exist, it should be in {}.".format(
