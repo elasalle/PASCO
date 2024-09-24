@@ -16,15 +16,6 @@ class NoGraphError(Exception):
     pass
 
 
-def generate_planted_partition(k, n_k, d, alpha, n_tries_for_connectedness, seed):
-    is_connected = False
-    n_tries = 0
-    while not is_connected and n_tries < n_tries_for_connectedness:
-        G = nx.planted_partition_graph(k, n_k, d/n_k, alpha*d/n_k, seed+n_tries)
-        is_connected = nx.is_connected(G)
-        n_tries += 1
-    return G
-
 def generate_SBM(k, n_k, pin, pout, n_tries_for_connectedness, seed):
     is_connected = False
     n_tries = 0
@@ -64,65 +55,6 @@ def generate_or_import_SBM(n, k, pin, pout, data_folder="data/", n_tries_for_con
     return G
 
 
-def generate_or_import_graph(n, k, d, alpha, data_folder="data/", n_tries_for_connectedness=5, seed=None):
-
-    n_k = n//k
-
-    if n < k:
-        raise GraphParameterError("n should be greater than k. Received n={} and k={}".format(n,k))
-    if d/n_k > 1 or d/n_k < 0:
-        raise GraphParameterError("d/n_k should be in [0,1]. Received {}".format(d/(n//k)))
-    if alpha > 1 or alpha < 0:
-        raise GraphParameterError("alpha should be in [0,1]. Received {}".format(alpha))
-    
-    graph_file_name = "G_n{}_k{}_d{}_alpha{}".format(n, k, d, alpha)
-    graph_path = data_folder+graph_file_name
-
-    if not os.path.exists(data_folder):
-        os.makedirs(data_folder)
-
-    if os.path.exists(graph_path):
-        G = nx.read_adjlist(graph_path, nodetype=int)
-        print("Graph imported")
-    else:
-        print("Graph currently does not exist. We generate it.")
-        G = generate_planted_partition(k, n_k, d, alpha, n_tries_for_connectedness, seed=2024)
-        nx.write_adjlist(G, graph_path)
-        print("Graph generated")
-
-    if not nx.is_connected(G):
-        raise ConnectednessError("The graph is not connected.")
-    return G
-
-
-def import_graph(n, k, d, alpha, data_folder="data/"):
-
-    n_k = n//k
-
-    if n < k:
-        raise GraphParameterError("n should be greater than k. Received n={} and k={}".format(n,k))
-    if d/n_k > 1 or d/n_k < 0:
-        raise GraphParameterError("d/n_k should be in [0,1]. Received {}".format(d/(n//k)))
-    if alpha > 1 or alpha < 0:
-        raise GraphParameterError("alpha should be in [0,1]. Received {}".format(alpha))
-    
-    graph_file_name = "G_n{}_k{}_d{}_alpha{}".format(n, k, d, alpha)
-    graph_path = data_folder+graph_file_name
-
-    if not os.path.exists(data_folder):
-        raise NoGraphError("the directory that should contain the graph does not exist.")
-    
-    if os.path.exists(graph_path):
-        G = nx.read_adjlist(graph_path, nodetype=int)
-    else:
-        raise NoGraphError("The graph that should be imported does not exist.")
-    
-    if not nx.is_connected(G):
-        raise ConnectednessError("The graph is not connected.")
-    
-    return G
-
-
 def read_real_datasets(data_folder='graphs/', dataset='arxiv'):
     """
     Return the adjacency matrix as a csr_array of a graph
@@ -157,17 +89,4 @@ def read_real_datasets(data_folder='graphs/', dataset='arxiv'):
         sp.save_npz(data_folder + dataset + '_adjacency_lcc.npz', A)
         np.savez(data_folder + dataset + '_node_label_lcc.npz', np.array(partition_true))
     return A, partition_true
-
-
-
-
-
-
-
-
-
-
-
-
-
 

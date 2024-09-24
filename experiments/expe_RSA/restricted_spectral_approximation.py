@@ -1,4 +1,4 @@
-from pasco.data_generation import generate_or_import_graph
+from pasco.data_generation import generate_or_import_SBM
 from pasco.coarsening import Coarsening
 from utils import compute_projector, spectral_error
 from libraries.coarsening_utils import coarsen
@@ -6,9 +6,9 @@ from libraries import graph_lib
 import numpy as np
 import networkx as nx
 from pygsp.graphs import Graph
-from scipy.sparse import csr_array, eye
-from scipy.linalg import cholesky, svd, eigh
-from scipy.sparse.linalg import lobpcg, eigsh
+from scipy.sparse import csr_array
+from scipy.linalg import  eigh
+from scipy.sparse.linalg import eigsh
 import matplotlib.pyplot as plt
 import warnings
 warnings.filterwarnings("ignore")
@@ -17,17 +17,17 @@ plt.rcParams.update({
     "text.usetex": True,
     "font.family": "Palatino",
     "font.serif": ["Palatino"],
-    "font.size": 12,
-    'axes.titlesize': 15,
-    'figure.titlesize': 20,
+    "font.size": 20
+    # 'axes.titlesize': 15,
+    # 'figure.titlesize': 20,
 })
 
 if __name__ == '__main__':
 
     # hyper-parameters
-    SBM_graph = True
+    SBM_graph = False 
     rs = np.linspace(0.1,0.9,17)
-    n_tables = 10  # number of coarsened graphs
+    n_tables = 10  # number of coarsened graphs for pasco
     method_sampling = 'uniform_node_sampling'
     parallel = True
     verbose = False
@@ -35,25 +35,29 @@ if __name__ == '__main__':
 
     if SBM_graph:
         # (n,k,d,alpha)
-        graphs = [(1000,10,10,1/10), (1000,10,10,1/20), (1000,100,10,1/100), (1000,100,10,1/200)]
+        # graphs = [(1000,10,10,1/10), (1000,10,10,1/20), (1000,100,10,1/100), (1000,100,10,1/200)]
+        graphs = [(1000,10,2,1/10), (1000,100,2,1/100), (1000,100,2,1/200)]
     else:
         graphs  = ['yeast','minnesota', 'airfoil'] 
     coarsening_methods = ["pasco", 'variation_edges', 'heavy_edge']
-    # error_types = ["RIP", "pseudoRIP", "RSA"]
     error_types = ["RSA"]
 
     # Data generation
     As, Ls = [], []
     if SBM_graph:
         for n,k,d,alpha in graphs:
-            G = generate_or_import_graph(n, k, d, alpha, "../data/", seed=2024)
+            n_k = n // k
+            avg_d = d * np.log(n)
+            pin = avg_d / ((1 + (k-1)*alpha )*n_k)
+            pout = alpha * pin
+            G = generate_or_import_SBM(n, k, pin, pout, data_folder="../data/graphs/SBMs/",  seed=2024)
             A = nx.adjacency_matrix(G, nodelist=range(n))
             As.append(A)
             L = nx.laplacian_matrix(G, nodelist=range(n)) # combinatorial laplacian
             Ls.append(L)
         del G
     else:
-        k = 10
+        k = 10 # size of the subspace to preserve in RSA
         for graph in graphs:
             G = graph_lib.real(10000, graph)
             As.append(csr_array(G.W))
@@ -114,7 +118,7 @@ if __name__ == '__main__':
     else:
         fig_name = "RSA_Loukas"
 
-    perc = 0.25
+    perc = 25
     alpha = 0.2
     tab20 = plt.cm.get_cmap('tab10')
     lsty = ['-', '--', ':']
@@ -127,17 +131,17 @@ if __name__ == '__main__':
         for i, cm in enumerate(coarsening_methods):
             for j, err_type in enumerate(error_types):
                 errs = errors[graph][cm][err_type]
-                ax.plot(rs, np.mean(errs, axis=1), color=tab20(i), marker=mkr[j], linestyle=lsty[j], label="{} ({})".format(err_type, cm))
+                ax.plot(rs, np.mean(errs, axis=1), color=tab20(i), marker=mkr[j], linestyle=lsty[j], label=cm)
                 ax.fill_between(rs, np.percentile(errs, perc, axis=1), np.percentile(errs, 100 - perc, axis=1), alpha=alpha, facecolor=tab20(i))
         ax.set_yscale('log')
-        ax.set_xlabel(r"compression rate $(1-1/\rho)$")
-        ax.set_ylabel("spectral error")
+        ax.set_xlabel(r"compression rate $(1-\rho^{-1})$")
         if SBM_graph:
-            ax.set_title("(n,k,d,alpha) = {}".format(graph))
+            ax.set_title(r"$k = {}$, $\alpha = {}$".format(graph[1], graph[3]))
         else:
             ax.set_title(graph)
         ax.grid()
         if iax==0:
+            ax.set_ylabel("RSA")
             legend = ax.legend(loc='upper center', bbox_to_anchor=(0.5, 0.12), bbox_transform=fig.transFigure, shadow=True, ncol=len(coarsening_methods))
     plt.subplots_adjust(bottom=0.25)  # Increase bottom margin
     fig.savefig(plot_dir+"/"+fig_name+".pdf")
