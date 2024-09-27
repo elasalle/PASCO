@@ -34,9 +34,6 @@ if __name__ == '__main__':
     # check that the results folder does exist, if not, create it.
     if not os.path.exists(res_dir):
         os.makedirs(res_dir)
-        print(f"Folder '{res_dir}' created.")
-    else:
-        print(f"Folder '{res_dir}' already exists.")
 
     # load graph
     dataset = args.dataset  # can be 'mag', 'arxiv', 'products'
