@@ -35,7 +35,7 @@ if __name__ == '__main__':
 
     # load graph
     dataset = args.dataset  # can be 'mag', 'arxiv', 'products'
-    data_folder = '../graphs/' + dataset + '/'
+    data_folder = '../data/graphs/' + dataset + '/'
     A, partition_true = read_real_datasets(data_folder=data_folder, dataset=dataset)
     print("Graph {} imported".format(dataset))
 
