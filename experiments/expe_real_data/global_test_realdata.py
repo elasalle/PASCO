@@ -2,14 +2,12 @@ import os
 os.environ["OMP_NUM_THREADS"] = "1"
 
 import numpy as np
-import networkx as nx
 from pasco.pasco import Pasco
 from pasco.data_generation import read_real_datasets
 import  pasco.clustering_tools as ct
 from sklearn.metrics.cluster import normalized_mutual_info_score as nmi, adjusted_mutual_info_score as ami, \
     adjusted_rand_score as ari
 import pickle
-import json
 import argparse
 import datetime
 from dateutil import tz
@@ -32,6 +30,13 @@ if __name__ == '__main__':
     ns_tables = [1,3,5,10,15]  # number of coarsened graphs
     solvers = ['infomap', 'SC','leiden', 'louvain', 'CSC', 'MDL' ]  # possible solvers are {'SC', 'graclus', 'louvain', 'leiden', 'CSC', 'MDL', 'infomap'}
     dataset = args.dataset
+
+    # check that the results folder does exist, if not, create it.
+    if not os.path.exists(res_dir):
+        os.makedirs(res_dir)
+        print(f"Folder '{res_dir}' created.")
+    else:
+        print(f"Folder '{res_dir}' already exists.")
 
     # load graph
     dataset = args.dataset  # can be 'mag', 'arxiv', 'products'
