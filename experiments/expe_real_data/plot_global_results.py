@@ -13,9 +13,9 @@ plt.rcParams.update({
     "text.usetex": True,
     "font.family": "Palatino",
     "font.serif": ["Palatino"],
-    "font.size": 15,
+    "font.size": 18,
     # 'axes.titlesize': 16,
-    'figure.titlesize': 20,
+    # 'figure.titlesize': 20,
 })
 
 def create_colormap_to_white(base_color):
@@ -124,11 +124,11 @@ if __name__ == '__main__':
     fig = plt.figure(figsize=(4*len(perfs), 5*len(rhos)), num='time')
 
     # Define the grid for the plots only (without colorbars)
-    wspace = 0.45
-    bottom = 0.25
+    wspace = 0.5
+    bottom = 0.27
     gs = gridspec.GridSpec(len(rhos), len(perfs), 
                         hspace=0.3, wspace=wspace,  # Keep spacing between actual plots
-                        top=0.85, bottom=bottom, left=0.055, right=0.85)  # Right boundary at 0.85 to leave space for colorbars
+                        top=0.87, bottom=bottom, left=0.055, right=0.87)  # Right boundary at 0.85 to leave space for colorbars
 
     # Create axes for the main plots
     axs = [fig.add_subplot(gs[0, j]) for j in range(len(perfs))]
@@ -168,7 +168,7 @@ if __name__ == '__main__':
             ax.set_ylabel(r"$\leftarrow$ " + perf)
 
     # Define position for colorbars outside the GridSpec
-    colorbar_width = 0.01
+    colorbar_width = 0.008
     colorbar_bottom = axs[0].get_position().y0
     colorbar_height = axs[0].get_position().height
     rightmost_plot_right = axs[-1].get_position().x1
@@ -193,7 +193,7 @@ if __name__ == '__main__':
         # Customize ticks and labels based on the position of the colorbar
         if idx == 0:
             # Leftmost colorbar: Add label 't' and place it to the left
-            cbar.ax.set_ylabel(r'$t$', rotation=0, labelpad=15, fontsize=12)
+            cbar.ax.set_ylabel(r'$t$', rotation=90)
             cbar.ax.yaxis.set_label_position('left')
 
         # Hide ticks and labels for all colorbars except the rightmost one
@@ -216,7 +216,7 @@ if __name__ == '__main__':
     # Add the legend
     handles, labels = axs[0].get_legend_handles_labels()
     # legend_ax = fig.add_subplot(gs[len(rhos), :])
-    legend_ax = fig.add_axes([0, 0, 1, 0.1])
+    legend_ax = fig.add_axes([0, 0.02, 1, 0.1])
     legend_ax.axis('off')  # Hide the axis for the legend area
     legend_ax.legend(handles, labels, loc='center', ncol=len(solvers), shadow=True)
 
