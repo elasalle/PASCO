@@ -103,10 +103,10 @@ if __name__ == '__main__':
     args = parser.parse_args()
 
     dataset = args.dataset
-    suffix = "quadratic_ot"
+    suffix = "ot"
     solvers = ['SC','CSC','louvain','leiden','MDL','infomap']
     res_dir = "results/"
-    table_dir = "../data/tables/real_data"
+    table_dir = "../data/tables/real_data/"
     save = True
     cvxhull = True    
     nt_max = 15
