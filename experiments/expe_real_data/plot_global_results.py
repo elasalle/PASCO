@@ -1,5 +1,5 @@
 # in anaconda prompt
-# scp elasalle@s92gpu2.cbp.ens-lyon.fr:/projects/users/elasalle/Parallel_Structured_Coarse_Grained_Spectral_Clustering/expes/expes_realdata/result_real_data/res_mag_CSC_MDL_SC_infomap_leiden_louvain_ot.pickle C:\Users\user\Documents\GitHub\Parallel_Structured_Coarse_Grained_Spectral_Clustering\expes\expes_realdata\result_real_data
+# scp elasalle@r740gpu1.cbp.ens-lyon.fr:/projects/users/elasalle/PASCO/experiments/expe_real_data/results/res_mag_CSC_MDL_SC_infomap_leiden_louvain_ot.pickle C:\Users\user\Documents\GitHub\PASCO\experiments\expe_real_data\results\
 
 import numpy as np
 import matplotlib as mpl
