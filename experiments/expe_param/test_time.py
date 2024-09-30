@@ -31,82 +31,63 @@ if __name__ == '__main__':
 
     parser = argparse.ArgumentParser(
     description='Test the influence of a parameter on the pasco performances.')
-    parser.add_argument('-p', '--parameter', nargs='?', type=str,
-                        help='parameter which influence is tested', default="rho",
-                        choices=["rho", "n_tables", "method_align"])
     parser.add_argument('-n', '--graphsize', nargs='?', type=int,
-                        help='gaph size', default=10**4)
-    parser.add_argument('-k', '--nbclusters', nargs='?', type=int,
-                        help='number of communities', default=20)
+                        help='gaph size', default=10**5)
     parser.add_argument('-d', '--density', nargs='?', type=float,
                         help='density coefficient', default=1.5)
     args = parser.parse_args()
 
     # experiment parameters
     nb_repetitions = 10
-    varying_param = args.parameter
 
     # default pasco parameters
     pasco_param = {
         "rho" : 10,
         "n_tables" : 10,  # number of coarsened graphs,
         "sampling" : "uniform_node_sampling",
-        "solver" : 'SC', # lobpcg is for spectral clustering.,
+        "solver" : 'SC', 
         "assign_labels" : 'cluster_qr',
         "method_align" : 'ot',
         "method_fusion" : 'hard_majority_vote',
-        "batch_size" : 1
-    }
-    varying_values = {
-        "rho" : [1.5,3,5,10,15],
-        "n_tables" : [3,5,10,15],
-        "method_align" : ["lin_reg", "many_to_one", "ot"],
-        "sampling" : ["uniform_node_sampling", "degree_node_sampling"]
     }
 
+    ks = np.array([20,100,1000])
+    rhos = [3,5,10,15]
+    
     # SBM parameters
     n = args.graphsize
-    k = args.nbclusters
     d = args.density
     avg_d = d*np.log(n)
-    n_alphas = 10
-    n_k = n//k
-    # alpha_c = (avg_d - np.sqrt(avg_d)) / (avg_d + (k-1)*np.sqrt(avg_d))
-    alpha_c = 1/(k-1)
-    alphas = np.linspace(0, 1.33*alpha_c , n_alphas+1)[1:] # avoid    alpha=0 which yields disconnected SBM graphs
-    pins = avg_d / ((1 + (k-1) *alphas )*n_k)
-    pouts = alphas * pins 
-    partition_true = np.array([i for i in range(k) for j in range(n_k)])
 
     # save some useful parameters
     results = {
-        "varying_param" : varying_param,
-        "varying_values" : varying_values[varying_param],
-        "true_partition" : partition_true,
         "n" : n,
-        "k" : k,
+        "ks" : ks,
+        "rhos": rhos,
         "avg_d" : avg_d,
-        "alphas" : alphas
+        "nrep" : nb_repetitions
     }
 
     # set directories
-    res_dir = "results/"
-    saving_file_name = res_dir + '/influence_of_' + varying_param  + '.pickle'
-    # check that the results folder does exist, if not, create it.
-    if not os.path.exists(res_dir):
-        os.makedirs(res_dir)
+    res_dir = "results_param_influence/"
+    saving_file_name = res_dir + '/timings' + '.pickle'
 
     # IMPORT OR GENERATE THE GRAPH
-    for expe_i, (pin, pout) in enumerate(zip(pins, pouts)):
+    for expe_i, k in enumerate(ks):
         results[expe_i] = {}
-        print("graph setting : {} / {}".format(expe_i+1, len(pins)))
+        print("graph setting : {} / {}".format(expe_i+1, len(ks)))
+        # compute graph parameters
+        n_k = n//k
+        alpha = 1/(2*(k-1))
+        pin = avg_d / ((1 + (k-1) *alpha )*n_k)
+        pout = alpha * pin
+        partition_true = np.array([i for i in range(k) for j in range(n_k)])
         for rep_i in range(nb_repetitions):
             print("  repetition : {} / {}".format(rep_i+1, nb_repetitions))
-            G = generate_or_import_SBM(n, k, pin, pout, data_folder="../graphs/SBMs/", seed=2024+100*rep_i)
+            G = generate_or_import_SBM(n, k, pin, pout, data_folder="data/", seed=2024+100*rep_i)
             A = nx.adjacency_matrix(G , nodelist=range(n))
 
             results[expe_i][rep_i] = {}
-            results[expe_i][rep_i]["true_modularity"] = modularity_graph(G, partition_true)
 
             ##############
             # compute SC #
@@ -119,10 +100,8 @@ if __name__ == '__main__':
             results[expe_i][rep_i]["SC"] = {}
             results[expe_i][rep_i]["SC"]["time"] = stop_sc - start_sc
             results[expe_i][rep_i]["SC"]["partition"] = partition_sc
-            results[expe_i][rep_i]["SC"]["ami"] = ami(partition_true, partition_sc)
-            results[expe_i][rep_i]["SC"]["ari"] = ari(partition_true, partition_sc)
-            results[expe_i][rep_i]["SC"]["modularity"] = modularity_graph(G, partition_sc)
             results[expe_i][rep_i]["SC"]["nb_clusters"] = len(np.unique(partition_sc))
+            results[expe_i][rep_i]["SC"]["ami"] = ami(partition_true, partition_sc)
 
             with open(saving_file_name, 'wb') as handle:
                 pickle.dump(results, handle, protocol=pickle.HIGHEST_PROTOCOL)
@@ -131,10 +110,12 @@ if __name__ == '__main__':
             # compute pasco #
             #################
             print("    pasco computations start")
-            for var_i, varying_val in enumerate(varying_values[varying_param]):
-                print("      param : {} / {}".format(var_i+1, len(varying_values[varying_param])))
-                pasco_param[varying_param] = varying_val
+            for var_i, rho in enumerate(rhos):
+                print("      param : {} / {}".format(var_i+1, len(rhos)))
                 results[expe_i][rep_i][var_i] = {}
+
+                pasco_param["rho"] = rho
+                pasco_param["n_tables"] = rho
 
                 ns = n // pasco_param["rho"]
 
@@ -157,14 +138,11 @@ if __name__ == '__main__':
                 results[expe_i][rep_i][var_i]["clustering"] = timings["clustering"]
                 results[expe_i][rep_i][var_i]["fusion"] = timings["fusion"]
                 results[expe_i][rep_i][var_i]["time"] = timings["coarsening"] + timings["clustering"] + timings["fusion"]
+                results[expe_i][rep_i][var_i]["partition"] = partition_pasco
                 results[expe_i][rep_i][var_i]["ami"] = ami(partition_true, partition_pasco)
-                results[expe_i][rep_i][var_i]["ari"] = ari(partition_true, partition_pasco)
-                results[expe_i][rep_i][var_i]["modularity"] = modularity_graph(G, partition_pasco)
                 results[expe_i][rep_i][var_i]["nb_clusters"] = len(np.unique(partition_pasco))
 
                 with open(saving_file_name, 'wb') as handle:
                     pickle.dump(results, handle, protocol=pickle.HIGHEST_PROTOCOL)
-
-    print("test finished. Results saved in {}".format(saving_file_name))
 
             
