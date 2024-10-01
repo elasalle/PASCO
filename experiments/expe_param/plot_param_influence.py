@@ -1,7 +1,6 @@
-# scp elasalle@platinum1.cbp.ens-lyon.fr:/projects/users/elasalle/Parallel_Structured_Coarse_Grained_Spectral_Clustering/expes/parameters_influence/results_param_influence/influence_of_method_align3.pickle C:\Users\user\Documents\GitHub\Parallel_Structured_Coarse_Grained_Spectral_Clustering\expes\parameters_influence\results_param_influence\
+# scp elasalle@r740gpu1.cbp.ens-lyon.fr:/projects/users/elasalle/PASCO/experiments/expe_param/results/influence_of_method_align.pickle C:\Users\user\Documents\GitHub\PASCO\experiments\expe_param\results\
 
 import numpy as np
-import matplotlib as mpl
 import matplotlib.pyplot as plt
 from matplotlib import colormaps
 import pickle
@@ -11,7 +10,7 @@ plt.rcParams.update({
     "text.usetex": True,
     "font.family": "Palatino",
     "font.serif": ["Palatino"],
-    "font.size": 20
+    "font.size": 18
     # 'axes.titlesize': 15,
     # 'figure.titlesize': 20,
 })
@@ -70,8 +69,8 @@ if __name__ == '__main__':
 
     # set directories
     res_dir = "results/"
-    saving_file_name = res_dir + '/influence_of_' + varying_param + '.pickle'
-    plots_dir = "../data/plots/param"
+    saving_file_name = res_dir + 'influence_of_' + varying_param + '.pickle'
+    plots_dir = "../data/plots/param/"
 
     # load results
     with open(saving_file_name, 'rb') as f:
@@ -102,7 +101,7 @@ if __name__ == '__main__':
     cm = colormaps.get_cmap("jet")
     labels_param = {
         "rho" : r"$\rho = $", 
-        "n_tables" :  r"$t = $",
+        "n_tables" :  r"$R = $",
         "method_align" : "",
         "sampling" : ""
               }
@@ -126,10 +125,18 @@ if __name__ == '__main__':
         ax.set_yscale('log')
     else:
         ax.set_ylim(-0.05,1.05)
-    plt.tight_layout()
-    legend = ax.legend(loc='right', bbox_to_anchor=(1, 0.5), bbox_transform=fig.transFigure, shadow=True)
-    plt.subplots_adjust(right=0.8)  # Increase right margin
 
+    if varying_param=="method_align":
+        right = 0.6
+    else:
+        right = 0.7
+    plt.subplots_adjust(left=0.15, bottom=0.2, right=right, top=0.95)  # Increase right margin
+    plot_bottom = ax.get_position().y0
+    plot_height = ax.get_position().height
+    handles, labels = ax.get_legend_handles_labels()
+    legend_ax = fig.add_axes([right, plot_bottom, 1-right, plot_height])
+    legend_ax.axis('off')  # Hide the axis for the legend area
+    legend_ax.legend(handles, labels, loc='center', shadow=True)
 
     figname = "influence_"+varying_param+"_"+score+"_n"+str(n)+"_k"+str(k)+"_d"+str(d)+".pdf"
     fig.savefig(plots_dir+figname)

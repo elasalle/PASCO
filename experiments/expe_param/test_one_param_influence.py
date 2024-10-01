@@ -102,7 +102,7 @@ if __name__ == '__main__':
         print("graph setting : {} / {}".format(expe_i+1, len(pins)))
         for rep_i in range(nb_repetitions):
             print("  repetition : {} / {}".format(rep_i+1, nb_repetitions))
-            G = generate_or_import_SBM(n, k, pin, pout, data_folder="../graphs/SBMs/", seed=2024+100*rep_i)
+            G = generate_or_import_SBM(n, k, pin, pout, data_folder="../data/graphs/SBMs/", seed=2024+100*rep_i)
             A = nx.adjacency_matrix(G , nodelist=range(n))
 
             results[expe_i][rep_i] = {}
