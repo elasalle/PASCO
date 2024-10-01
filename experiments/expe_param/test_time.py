@@ -69,8 +69,8 @@ if __name__ == '__main__':
     }
 
     # set directories
-    res_dir = "results_param_influence/"
-    saving_file_name = res_dir + '/timings' + '.pickle'
+    res_dir = "results/"
+    saving_file_name = res_dir + 'timings' + '.pickle'
 
     # IMPORT OR GENERATE THE GRAPH
     for expe_i, k in enumerate(ks):
@@ -84,7 +84,7 @@ if __name__ == '__main__':
         partition_true = np.array([i for i in range(k) for j in range(n_k)])
         for rep_i in range(nb_repetitions):
             print("  repetition : {} / {}".format(rep_i+1, nb_repetitions))
-            G = generate_or_import_SBM(n, k, pin, pout, data_folder="data/", seed=2024+100*rep_i)
+            G = generate_or_import_SBM(n, k, pin, pout, data_folder="../data/graphs/SBMs/", seed=2024+100*rep_i)
             A = nx.adjacency_matrix(G , nodelist=range(n))
 
             results[expe_i][rep_i] = {}
