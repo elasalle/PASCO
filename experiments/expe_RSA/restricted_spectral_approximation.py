@@ -9,143 +9,131 @@ from pygsp.graphs import Graph
 from scipy.sparse import csr_array
 from scipy.linalg import  eigh
 from scipy.sparse.linalg import eigsh
-import matplotlib.pyplot as plt
+from time import time, perf_counter
+import pickle
 import warnings
 warnings.filterwarnings("ignore")
 
-plt.rcParams.update({
-    "text.usetex": True,
-    "font.family": "Palatino",
-    "font.serif": ["Palatino"],
-    "font.size": 20
-    # 'axes.titlesize': 15,
-    # 'figure.titlesize': 20,
-})
+
 
 if __name__ == '__main__':
 
     # hyper-parameters
-    SBM_graph = False 
+    graph_types = ["real", "SBM"] 
+    # rs = np.linspace(0.1,0.9,2)
     rs = np.linspace(0.1,0.9,17)
-    n_tables = 10  # number of coarsened graphs for pasco
+    n_repetitions = 10  # number of timmes the coarsening is repeated
     method_sampling = 'uniform_node_sampling'
-    parallel = True
+    parallel = False
     verbose = False
     save_fig = True
-
-    if SBM_graph:
-        # (n,k,d,alpha)
-        # graphs = [(1000,10,10,1/10), (1000,10,10,1/20), (1000,100,10,1/100), (1000,100,10,1/200)]
-        graphs = [(1000,10,2,1/10), (1000,100,2,1/100), (1000,100,2,1/200)]
-    else:
-        graphs  = ['yeast','minnesota', 'airfoil'] 
     coarsening_methods = ["pasco", 'variation_edges', 'heavy_edge']
-    error_types = ["RSA"]
+    labels = {"pasco":"PASCO",
+              'variation_edges':'variation_edges',
+              'heavy_edge':'heavy_edge'}
+    err_type = "RSA"
 
-    # Data generation
-    As, Ls = [], []
-    if SBM_graph:
-        for n,k,d,alpha in graphs:
-            n_k = n // k
-            avg_d = d * np.log(n)
-            pin = avg_d / ((1 + (k-1)*alpha )*n_k)
-            pout = alpha * pin
-            G = generate_or_import_SBM(n, k, pin, pout, data_folder="../data/graphs/SBMs/",  seed=2024)
-            A = nx.adjacency_matrix(G, nodelist=range(n))
-            As.append(A)
-            L = nx.laplacian_matrix(G, nodelist=range(n)) # combinatorial laplacian
-            Ls.append(L)
-        del G
-    else:
-        k = 10 # size of the subspace to preserve in RSA
-        for graph in graphs:
-            G = graph_lib.real(10000, graph)
-            As.append(csr_array(G.W))
-            Ls.append(G.L)
-    
+    res_dir = "results/"
+    saving_file_name = res_dir + '/results' + '.pickle'
+
     errors = {}
-    for A,L,graph in zip(As, Ls, graphs):
-        print("Graph : {}".format(graph))
-
-        n = A.shape[0]
-        errors[graph] = {}
-
-
-        # compute the square root of the laplacian
-        lambdas, U = eigh(L.toarray())
-        lambdas[0] = 0
-        S = U @ np.diag(np.sqrt(lambdas)) @ U.T
-        # S = cholesky(L.todense())
-        print("S computed")
-        print("S.T @ S == L :  {}".format(np.linalg.norm(L - S.T @ S) < 1e-5 ))
-
-        # compute the k first (without the first) eigen elements (used for the error computations)
-        lambdas_k, Uk = eigsh(csr_array.asfptype(L), k=k, which='SM', tol=1e-6)
-        Lambdask_halfinv = np.diag(lambdas_k**(-1/2))
-        Lambdask_halfinv = Lambdask_halfinv[1:, 1:] # remove the first element
-        Uk = Uk[:,1:] # remove the first element
-        # Lambdask_halfinv[0] = 0 # enforce the first eigenvalue to be 0
-        print("eigen elements computed")
-
-        
-        for cm in coarsening_methods:
-            print("coarsening method: {}".format(cm))
-            errors[graph][cm] = {}
-            for err_type in error_types:
-                errors[graph][cm][err_type] = []
-            for r in rs:
-                ns = int(np.floor((1-r)*n))
-                print("  r = {:.0%}".format(r))
-
-                if cm=="pasco":
-                    coarsening = Coarsening(ns, 1)
-                    Aprimes, tables = coarsening.fit_transform_multiple(A, n_tables)
-                    Pis = [compute_projector(table, n, ns) for table in tables]
-                else:
-                    pygspG = Graph(A)
-                    C, _, _, _ = coarsen(pygspG, K=k, r=r, max_levels=20, method=cm, algorithm='greedy')
-                    Pis = [C.T @ C]
-
-                for err_type in error_types:
-                    err = [ spectral_error(S, Pi, Uk, Lambdask_halfinv, method=err_type) for Pi in Pis]
-                    errors[graph][cm][err_type].append(err)
-
-    # figure
-
-    plot_dir = "../data/plots/RSA"
-    if SBM_graph:
-        fig_name = "RSA_SBM"
-    else:
-        fig_name = "RSA_Loukas"
-
-    perc = 25
-    alpha = 0.2
-    tab20 = plt.cm.get_cmap('tab10')
-    lsty = ['-', '--', ':']
-    mkr = ['o', '^', 'P']
-    fig, axs = plt.subplots(1,len(graphs), figsize=(5*len(graphs), 7), sharey=True)
-    if len(graphs)==1:
-        axs = [axs]
-    for iax, ax in enumerate(axs):
-        graph = graphs[iax]
-        for i, cm in enumerate(coarsening_methods):
-            for j, err_type in enumerate(error_types):
-                errs = errors[graph][cm][err_type]
-                ax.plot(rs, np.mean(errs, axis=1), color=tab20(i), marker=mkr[j], linestyle=lsty[j], label=cm)
-                ax.fill_between(rs, np.percentile(errs, perc, axis=1), np.percentile(errs, 100 - perc, axis=1), alpha=alpha, facecolor=tab20(i))
-        ax.set_yscale('log')
-        ax.set_xlabel(r"compression rate $(1-\rho^{-1})$")
-        if SBM_graph:
-            ax.set_title(r"$k = {}$, $\alpha = {}$".format(graph[1], graph[3]))
+    timings = {}
+    for graph_type in graph_types:
+        if graph_type=="SBM":
+            # (n,k,d,alpha)
+            # graphs = [(1000,10,10,1/10), (1000,10,10,1/20), (1000,100,10,1/100), (1000,100,10,1/200)]
+            graphs = [(1000,10,2,1/10), (1000,100,2,1/100), (1000,100,2,1/200)]
         else:
-            ax.set_title(graph)
-        ax.grid()
-        if iax==0:
-            ax.set_ylabel("RSA")
-            legend = ax.legend(loc='upper center', bbox_to_anchor=(0.5, 0.12), bbox_transform=fig.transFigure, shadow=True, ncol=len(coarsening_methods))
-    plt.subplots_adjust(bottom=0.25)  # Increase bottom margin
-    fig.savefig(plot_dir+"/"+fig_name+".pdf")
-    plt.show()
+            graphs  = ['yeast','minnesota', 'airfoil'] 
+        
+        # Data generation
+        As, Ls = [], []
+        if graph_type=="SBM":
+            for n,k,d,alpha in graphs:
+                n_k = n // k
+                avg_d = d * np.log(n)
+                pin = avg_d / ((1 + (k-1)*alpha )*n_k)
+                pout = alpha * pin
+                G = generate_or_import_SBM(n, k, pin, pout, data_folder="../data/graphs/SBMs/",  seed=2024)
+                A = nx.adjacency_matrix(G, nodelist=range(n))
+                As.append(A)
+                L = nx.laplacian_matrix(G, nodelist=range(n)) # combinatorial laplacian
+                Ls.append(L)
+            del G
+        else:
+            k = 10 # size of the subspace to preserve in RSA
+            for graph in graphs:
+                G = graph_lib.real(10000, graph)
+                As.append(csr_array(G.W))
+                Ls.append(G.L)
+        
+        
+        errors[graph_type] = {}
+        timings[graph_type] = {}
+        for A,L,graph in zip(As, Ls, graphs):
+            print("Graph : {}".format(graph))
+
+            n = A.shape[0]
+            errors[graph_type][graph] = {}
+            timings[graph_type][graph] = {}
+
+
+            # compute the square root of the laplacian
+            lambdas, U = eigh(L.toarray())
+            lambdas[0] = 0
+            S = U @ np.diag(np.sqrt(lambdas)) @ U.T
+            # S = cholesky(L.todense())
+            print("S computed")
+            print("S.T @ S == L :  {}".format(np.linalg.norm(L - S.T @ S) < 1e-5 ))
+
+            # compute the k first (without the first) eigen elements (used for the error computations)
+            lambdas_k, Uk = eigsh(csr_array._asfptype(L), k=k, which='SM', tol=1e-6)
+            Lambdask_halfinv = np.diag(lambdas_k**(-1/2))
+            Lambdask_halfinv = Lambdask_halfinv[1:, 1:] # remove the first element
+            Uk = Uk[:,1:] # remove the first element
+            # Lambdask_halfinv[0] = 0 # enforce the first eigenvalue to be 0
+            print("eigen elements computed")
+
+            
+            for cm in coarsening_methods:
+                print("coarsening method: {}".format(cm))
+                errors[graph_type][graph][cm] = []
+                timings[graph_type][graph][cm] = []
+                for r in rs:
+                    ns = int(np.floor((1-r)*n))
+                    print("  r = {:.0%}".format(r))
+                    Pis = []
+                    times = []
+                    for _ in range(n_repetitions):
+                        pygspG = Graph(A)
+                        if cm=="pasco":
+                            ti = perf_counter()
+                            coarsening = Coarsening(ns, 1)
+                            Aprimes, tables = coarsening.fit_transform_multiple(A, n_tables=1)
+                            tf = perf_counter()
+                            Pi = compute_projector(tables[0], n, ns)
+                        else:
+                            ti = perf_counter()
+                            C, _, _, _ = coarsen(pygspG, K=k, r=r, max_levels=20, method=cm, algorithm='greedy')
+                            tf = perf_counter()
+                            Pi = C.T @ C
+                        Pis.append(Pi)
+                        times.append(tf-ti)
+                    err = [ spectral_error(S, Pi, Uk, Lambdask_halfinv, method=err_type) for Pi in Pis]
+                    errors[graph_type][graph][cm].append(err)
+                    timings[graph_type][graph][cm].append(times)
+    
+    results = {}
+    results['graph_types'] = graph_types
+    results['coarsening_methods'] = coarsening_methods
+    results['rs'] = rs
+    results['errors'] = errors
+    results['timings'] = timings
+
+    with open(saving_file_name, 'wb') as handle:
+                    pickle.dump(results, handle, protocol=pickle.HIGHEST_PROTOCOL)
+
+    
 
 
 

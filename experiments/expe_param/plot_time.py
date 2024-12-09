@@ -1,4 +1,4 @@
-# scp elasalle@platinum1.cbp.ens-lyon.fr:/projects/users/elasalle/Parallel_Structured_Coarse_Grained_Spectral_Clustering/expes/parameters_influence/results_param_influence/timings_ot.pickle C:\Users\user\Documents\GitHub\Parallel_Structured_Coarse_Grained_Spectral_Clustering\expes\parameters_influence\results_param_influence\
+# scp elasalle@r740gpu1.cbp.ens-lyon.fr:/projects/users/elasalle/PASCO/experiments/expe_param/results/timings.pickle C:\Users\user\Documents\GitHub\PASCO\experiments\expe_param\results\
 
 import numpy as np
 import matplotlib as mpl
@@ -66,10 +66,13 @@ if __name__ == '__main__':
     score = args.score
     relative = args.relative
 
+    score_names = {"ami":"AMI",
+                   "time":"time"}
+
     # set directories
     res_dir = "results/"
     saving_file_name = res_dir + 'timings' + '.pickle'
-    plots_dir = "../data/plots/param"
+    plots_dir = "../data/plots/param/"
 
     # load results
     with open(saving_file_name, 'rb') as f:
@@ -132,15 +135,20 @@ if __name__ == '__main__':
     if relative:
         ax.set_ylabel("relative "+score)
     else:
-        ax.set_ylabel(score)
-    ax.set_xlabel(r"$\rho$")
+        ax.set_ylabel(score_names[score])
+    ax.set_xlabel(r"$\rho = R$")
     if "time" in score:
         ax.set_yscale('log')
     else:
         ax.set_ylim(-0.05,1.05)
-    plt.tight_layout()
-    legend = ax.legend(loc='right', bbox_to_anchor=(1, 0.5), bbox_transform=fig.transFigure, shadow=True)
-    plt.subplots_adjust(right=0.77)  # Increase right margin
+    right = 0.63
+    plt.subplots_adjust(left=0.17, bottom=0.2, right=right, top=0.95)  # Increase right margin
+    plot_bottom = ax.get_position().y0
+    plot_height = ax.get_position().height
+    handles, labels = ax.get_legend_handles_labels()
+    legend_ax = fig.add_axes([right, plot_bottom, 1-right, plot_height])
+    legend_ax.axis('off')  # Hide the axis for the legend area
+    legend_ax.legend(handles[::-1], labels[::-1], loc='center', shadow=True)
 
     figname = ("timings_"+score+"_n"+str(n)+"_ks"+str(ks)+".pdf").replace(" ", "")
     fig.savefig(plots_dir+figname)

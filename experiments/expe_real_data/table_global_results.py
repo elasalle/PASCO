@@ -13,25 +13,34 @@ def add_midrules(latex_table, solvers):
     # Add \midrule after each solver
     new_lines = []
     for line in lines:
-        if line.split(' &')[0] in solvers[1:]:
+        if line.split(' &')[0] in solvers:
             new_lines.append("\\midrule")
         new_lines.append(line)
     
     # Join the modified lines into a single string
     return '\n'.join(new_lines)
 
+def blank(x):
+    return x
+
 def sci_format(x):
-    # Format number in scientific notation
-    formatted = f'{x:.2e}'
-    # Replace "+" with "", remove leading zeros after "e"
-    base, exponent = formatted.split('e')
-    if exponent.startswith('+'):
-        exponent = exponent[1:]  # Remove leading "+"
-    if exponent.startswith('0'):
-        exponent = exponent[1:]
-    return f'{base}e{exponent}'
+    if x != "":
+        # Format number in scientific notation
+        formatted = f'{x:.2e}'
+        # Replace "+" with "", remove leading zeros after "e"
+        base, exponent = formatted.split('e')
+        if exponent.startswith('+'):
+            exponent = exponent[1:]  # Remove leading "+"
+        if exponent.startswith('0'):
+            exponent = exponent[1:]
+        return f'{base}e{exponent}'
+    else:
+        return blank(x)
 def sub1_format(x):
-    return f'{x:4.3}'
+    if x != "":
+        return f'{x:4.3}'
+    else:
+        return blank(x)
 
 def sci_to_float(x):
     """Convert a string in scientific notation back to a float."""
@@ -40,15 +49,12 @@ def sci_to_float(x):
     except ValueError:
         return np.nan
     
-def combined_format(x, is_bold, is_boxed):
-    """Format the value with both bold and boxed LaTeX commands as necessary."""
-    if is_bold and is_boxed:
-        return f'\\fbox{{\\textbf{{{x}}}}}'
-    elif is_bold:
+def bold_format(x, is_bold):
+    """Format the value with bold LaTeX commands as necessary."""
+    if is_bold:
         return f'\\textbf{{{x}}}'
-    elif is_boxed:
-        return f'\\fbox{{{x}}}'
-    return x
+    else:
+        return x
 
 def sci_to_float(x):
     """Convert a string in scientific notation back to a float."""
@@ -57,40 +63,35 @@ def sci_to_float(x):
     except ValueError:
         return np.nan
 
-def precompute_extremal_values(df, perfs):
-    """Precompute the overall minimum and maximum values for each performance metric."""
-    min_values = {}
-    max_values = {}
-
-    for col in perfs:
-        numeric_vals = df[col].apply(sci_to_float)
-        min_values[col] = numeric_vals.min()
-        max_values[col] = numeric_vals.max()
-
-    return min_values, max_values
-
-def apply_combined_formatting(df, solver, perfs, min_values, max_values):
+def apply_combined_formatting(df, solver, perfs, ground_truth_scores):
     """Apply both bold and box formatting to extremal values in the DataFrame for each solver."""
     df_solver = df[df['methods'].str.startswith(solver)]
 
-    min_cols = ['time', 'gnCut', 'dl']
-    max_cols = ['ami', 'modularity']
+    gt_cols = ['modularity', 'gnCut', 'dl']
+    min_cols =['time']
+    max_cols = ['ami']
 
     for col in perfs:
-        numeric_vals = df_solver[col].apply(sci_to_float)
+        numeric_vals = np.array(df_solver[col].apply(sci_to_float))
         if col in min_cols:
             min_value = numeric_vals.min()
             df.loc[df['methods'].str.startswith(solver), col] = \
                 df.loc[df['methods'].str.startswith(solver), col].apply(
-                    lambda x: combined_format(x, is_bold=sci_to_float(x) == min_value, is_boxed=sci_to_float(x) == min_values[col])
+                    lambda x: bold_format(x, is_bold=sci_to_float(x) == min_value)
                 )
         elif col in max_cols:
             max_value = numeric_vals.max()
             df.loc[df['methods'].str.startswith(solver), col] = \
                 df.loc[df['methods'].str.startswith(solver), col].apply(
-                    lambda x: combined_format(x, is_bold=sci_to_float(x) == max_value, is_boxed=sci_to_float(x) == max_values[col])
+                    lambda x: bold_format(x, is_bold=sci_to_float(x) == max_value)
                 )
-
+        elif col in gt_cols:
+            argminindex = np.argmin(np.abs(numeric_vals-ground_truth_scores[col]))
+            opt_value = numeric_vals[argminindex]
+            df.loc[df['methods'].str.startswith(solver), col] = \
+                df.loc[df['methods'].str.startswith(solver), col].apply(
+                    lambda x: bold_format(x, is_bold=sci_to_float(x) == opt_value)
+                )
     return df
 
 
@@ -132,6 +133,11 @@ if __name__ == '__main__':
     # Collect data into a pandas DataFrame
     data = []
 
+    ground_truth_row = ["ground truth"]
+    ground_truth_row.extend([results.get("true_"+perf, "") for perf in perfs])
+    data.append(ground_truth_row)
+    ground_truth_scores = dict(zip(["modularity", "gnCut", "dl"], ground_truth_row[3:]))
+
     # Loop through solvers and nts to collect data
     for solver in solvers:
         row = [solver]
@@ -152,12 +158,9 @@ if __name__ == '__main__':
     for col in ["ami", "modularity", "gnCut"]:
         df[col] = df[col].apply(sub1_format)
 
-    # Precompute overall extremal values
-    min_values, max_values = precompute_extremal_values(df, perfs)
-
     # Apply combined formatting for extremal values and overall optimal values
     for solver in solvers:
-        df = apply_combined_formatting(df, solver, perfs, min_values, max_values)
+        df = apply_combined_formatting(df, solver, perfs, ground_truth_scores)
 
     # Define the mapping of column names to their LaTeX representations
     column_name_mapping = {

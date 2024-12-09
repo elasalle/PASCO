@@ -26,7 +26,7 @@ if __name__ == '__main__':
     # set directories
     res_dir = "results/"
     saving_file_name = res_dir + 'timings' + '.pickle'
-    plots_dir = "../data/plots/param"
+    plots_dir = "../data/plots/param/"
 
     # load results
     with open(saving_file_name, 'rb') as f:
@@ -59,16 +59,19 @@ if __name__ == '__main__':
     y2_cumsum = co_times + cl_times
     y3_cumsum = co_times + cl_times + fu_times
 
+    fig, ax = plt.subplots(1,1, figsize=(6,4))
+
     # Create the stacked area plot
-    plt.fill_between(xvalues, 0, y1_cumsum, label='coarsening', alpha=0.75)
-    plt.fill_between(xvalues, y1_cumsum, y2_cumsum, label='clustering', alpha=0.75)
-    plt.fill_between(xvalues, y2_cumsum, y3_cumsum, label='fusion', alpha=0.75)
+    ax.fill_between(xvalues, 0, y1_cumsum, label='coarsening', alpha=0.75)
+    ax.fill_between(xvalues, y1_cumsum, y2_cumsum, label='clustering', alpha=0.75)
+    ax.fill_between(xvalues, y2_cumsum, y3_cumsum, label='fusion', alpha=0.75)
 
     # Add labels and legend
-    plt.xlabel(r'$\rho$')
-    plt.ylabel('time')
-    plt.xticks(xvalues)
-    plt.legend()
+    ax.set_xlabel(r'$\rho$')
+    ax.set_ylabel('time')
+    ax.set_xticks(xvalues)
+    ax.legend()
+    plt.subplots_adjust(left=0.17, bottom=0.2, right=0.95, top=0.95)
 
     # Save plot
     figname = "timings_stacked_area"+"_n"+str(n)+"_k"+str(k)+".pdf"

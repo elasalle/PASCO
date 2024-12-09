@@ -2,6 +2,8 @@
 \toprule
 methods & time $\downarrow$ & ami $\uparrow$ & modularity $\uparrow$ & gnCut $\downarrow$ & dl $\downarrow$ \\
 \midrule
+ground truth &  &  & 0.493 & 0.436 & 9.23e6 \\
+\midrule
 SC & 7.42e1 & 0.19 & 0.26 & 0.819 & 9.58e6 \\
 SC+PASCO $(t=1)$ & \textbf{4.46e0} & 0.294 & 0.353 & 0.81 & 9.46e6 \\
 SC+PASCO $(t=3)$ & 1.02e1 & 0.289 & 0.321 & \textbf{0.779} & 9.49e6 \\
@@ -9,39 +11,39 @@ SC+PASCO $(t=5)$ & 1.16e1 & 0.31 & 0.353 & 0.839 & \textbf{9.43e6} \\
 SC+PASCO $(t=10)$ & 1.87e1 & \textbf{0.311} & \textbf{0.354} & 0.883 & \textbf{9.43e6} \\
 SC+PASCO $(t=15)$ & 3.06e1 & 0.31 & 0.34 & 0.893 & 9.44e6 \\
 \midrule
-CSC & 2.71e2 & 0.129 & \textbf{0.361} & \fbox{\textbf{ 0.4}} & 9.60e6 \\
+CSC & 2.71e2 & 0.129 & \textbf{0.361} & \textbf{ 0.4} & 9.60e6 \\
 CSC+PASCO $(t=1)$ & \textbf{2.54e1} & 0.185 & 0.325 & 0.481 & 9.56e6 \\
 CSC+PASCO $(t=3)$ & 3.06e1 & 0.192 & 0.299 & 0.477 & 9.58e6 \\
 CSC+PASCO $(t=5)$ & 3.28e1 & 0.21 & 0.291 & 0.48 & 9.55e6 \\
 CSC+PASCO $(t=10)$ & 5.29e1 & 0.255 & 0.303 & 0.546 & 9.45e6 \\
 CSC+PASCO $(t=15)$ & 7.46e1 & \textbf{0.268} & 0.311 & 0.572 & \textbf{9.41e6} \\
 \midrule
-louvain & 1.77e0 & 0.39 & \textbf{0.704} & 0.897 & \textbf{8.39e6} \\
-louvain+PASCO $(t=1)$ & \fbox{\textbf{1.14e0}} & 0.349 & 0.581 & 0.881 & 9.05e6 \\
+louvain & 1.77e0 & 0.39 & 0.704 & 0.897 & 8.39e6 \\
+louvain+PASCO $(t=1)$ & \textbf{1.14e0} & 0.349 & \textbf{0.581} & 0.881 & \textbf{9.05e6} \\
 louvain+PASCO $(t=3)$ & 5.00e0 & 0.37 & 0.615 & \textbf{0.879} & 8.94e6 \\
 louvain+PASCO $(t=5)$ & 6.76e0 & 0.391 & 0.637 & 0.913 & 8.88e6 \\
 louvain+PASCO $(t=10)$ & 1.22e1 & 0.393 & 0.648 & 0.914 & 8.85e6 \\
 louvain+PASCO $(t=15)$ & 1.79e1 & \textbf{0.405} & 0.655 & 0.918 & 8.82e6 \\
 \midrule
-leiden & 1.38e1 & 0.409 & \fbox{\textbf{0.713}} & 0.909 & \textbf{8.38e6} \\
-leiden+PASCO $(t=1)$ & \textbf{4.77e0} & 0.359 & 0.579 & 0.891 & 9.06e6 \\
+leiden & 1.38e1 & 0.409 & 0.713 & 0.909 & 8.38e6 \\
+leiden+PASCO $(t=1)$ & \textbf{4.77e0} & 0.359 & \textbf{0.579} & 0.891 & \textbf{9.06e6} \\
 leiden+PASCO $(t=3)$ & 1.28e1 & 0.391 & 0.619 & 0.885 & 8.95e6 \\
 leiden+PASCO $(t=5)$ & 1.66e1 &  0.4 & 0.64 & \textbf{0.883} & 8.85e6 \\
 leiden+PASCO $(t=10)$ & 2.86e1 & 0.408 & 0.654 & 0.892 & 8.81e6 \\
 leiden+PASCO $(t=15)$ & 3.67e1 & \textbf{0.418} & 0.665 & 0.922 & 8.75e6 \\
 \midrule
-MDL & 7.51e2 & 0.351 & \textbf{0.651} & 0.705 & \fbox{\textbf{8.03e6}} \\
+MDL & 7.51e2 & 0.351 & 0.651 & 0.705 & 8.03e6 \\
 MDL+PASCO $(t=1)$ & \textbf{3.82e2} & 0.322 & 0.396 & \textbf{0.438} & 8.93e6 \\
-MDL+PASCO $(t=3)$ & 5.24e2 & 0.338 & 0.384 & 0.442 & 8.98e6 \\
+MDL+PASCO $(t=3)$ & 5.24e2 & 0.338 & 0.384 & 0.442 & \textbf{8.98e6} \\
 MDL+PASCO $(t=5)$ & 4.78e2 & 0.351 & 0.429 & 0.45 & 8.79e6 \\
 MDL+PASCO $(t=10)$ & 6.52e2 & 0.379 & 0.462 & 0.476 & 8.61e6 \\
-MDL+PASCO $(t=15)$ & 8.09e2 & \textbf{0.387} & 0.496 & 0.506 & 8.52e6 \\
+MDL+PASCO $(t=15)$ & 8.09e2 & \textbf{0.387} & \textbf{0.496} & 0.506 & 8.52e6 \\
 \midrule
-infomap & 3.14e1 & 0.376 & \textbf{0.696} & 0.775 & \textbf{8.06e6} \\
-infomap+PASCO $(t=1)$ & \textbf{6.04e0} & 0.358 & 0.568 & \textbf{0.751} & 8.82e6 \\
+infomap & 3.14e1 & 0.376 & 0.696 & 0.775 & 8.06e6 \\
+infomap+PASCO $(t=1)$ & \textbf{6.04e0} & 0.358 & \textbf{0.568} & \textbf{0.751} & \textbf{8.82e6} \\
 infomap+PASCO $(t=3)$ & 1.09e1 & 0.382 & 0.582 & 0.766 & 8.80e6 \\
 infomap+PASCO $(t=5)$ & 1.22e1 & 0.395 & 0.605 & 0.782 & 8.67e6 \\
 infomap+PASCO $(t=10)$ & 2.32e1 & 0.415 & 0.628 & 0.799 & 8.57e6 \\
-infomap+PASCO $(t=15)$ & 2.81e1 & \fbox{\textbf{0.423}} & 0.639 & 0.809 & 8.53e6 \\
+infomap+PASCO $(t=15)$ & 2.81e1 & \textbf{0.423} & 0.639 & 0.809 & 8.53e6 \\
 \bottomrule
 \end{tabular}

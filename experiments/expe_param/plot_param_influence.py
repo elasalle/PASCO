@@ -66,6 +66,10 @@ if __name__ == '__main__':
     args = parser.parse_args()
     varying_param = args.parameter
     score = args.score
+    score_names = {"ami":"AMI",
+                   "ari": "ARI",
+                   "time":"time",
+                   "modularity":"modularity"}
 
     # set directories
     res_dir = "results/"
@@ -119,7 +123,7 @@ if __name__ == '__main__':
         label = labels_param[varying_param] + str(val)
         plot_perf(alphas, score_values[:,:,iz], color, label, perc=perc, alpha=transparency, ax=ax, direction=-1)
     ax.grid()
-    ax.set_ylabel(score)
+    ax.set_ylabel(score_names[score])
     ax.set_xlabel(r"$\alpha$")
     if score=="time":
         ax.set_yscale('log')
