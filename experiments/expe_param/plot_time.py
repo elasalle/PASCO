@@ -7,11 +7,13 @@ from matplotlib import colormaps
 import pickle
 import argparse
 
+fs=22
+
 plt.rcParams.update({
     "text.usetex": True,
     "font.family": "Palatino",
     "font.serif": ["Palatino"],
-    "font.size": 20
+    "font.size": fs
     # 'axes.titlesize': 15,
     # 'figure.titlesize': 20,
 })
@@ -99,7 +101,7 @@ if __name__ == '__main__':
             for ix in range(nx):
                 score_values[ix, irep, iz] = results[iz][irep][ix][score]
 
-    fig, ax = plt.subplots(1,1, figsize=(6,4))
+    fig, ax = plt.subplots(1,1, figsize=(7,4))
     perc = 20
     transparency = 0.2
     cm = colormaps.get_cmap("jet")
@@ -141,8 +143,8 @@ if __name__ == '__main__':
         ax.set_yscale('log')
     else:
         ax.set_ylim(-0.05,1.05)
-    right = 0.63
-    plt.subplots_adjust(left=0.17, bottom=0.2, right=right, top=0.95)  # Increase right margin
+    right = 0.66
+    plt.subplots_adjust(left=0.15, bottom=0.2, right=right, top=0.99)  # Increase right margin
     plot_bottom = ax.get_position().y0
     plot_height = ax.get_position().height
     handles, labels = ax.get_legend_handles_labels()

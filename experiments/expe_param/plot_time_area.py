@@ -5,11 +5,13 @@ from matplotlib import colormaps
 import pickle
 import argparse
 
+fs = 22
+
 plt.rcParams.update({
     "text.usetex": True,
     "font.family": "Palatino",
     "font.serif": ["Palatino"],
-    "font.size": 20
+    "font.size": fs
     # 'axes.titlesize': 15,
     # 'figure.titlesize': 20,
 })
@@ -59,7 +61,7 @@ if __name__ == '__main__':
     y2_cumsum = co_times + cl_times
     y3_cumsum = co_times + cl_times + fu_times
 
-    fig, ax = plt.subplots(1,1, figsize=(6,4))
+    fig, ax = plt.subplots(1,1, figsize=(7,4))
 
     # Create the stacked area plot
     ax.fill_between(xvalues, 0, y1_cumsum, label='coarsening', alpha=0.75)
@@ -67,11 +69,11 @@ if __name__ == '__main__':
     ax.fill_between(xvalues, y2_cumsum, y3_cumsum, label='fusion', alpha=0.75)
 
     # Add labels and legend
-    ax.set_xlabel(r'$\rho$')
+    ax.set_xlabel(r"$\rho = R$")
     ax.set_ylabel('time')
     ax.set_xticks(xvalues)
     ax.legend()
-    plt.subplots_adjust(left=0.17, bottom=0.2, right=0.95, top=0.95)
+    plt.subplots_adjust(left=0.12, bottom=0.2, right=0.95, top=0.99)
 
     # Save plot
     figname = "timings_stacked_area"+"_n"+str(n)+"_k"+str(k)+".pdf"

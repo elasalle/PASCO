@@ -6,11 +6,13 @@ from matplotlib import colormaps
 import pickle
 import argparse
 
+fs = 22
+
 plt.rcParams.update({
     "text.usetex": True,
     "font.family": "Palatino",
     "font.serif": ["Palatino"],
-    "font.size": 18
+    "font.size": fs
     # 'axes.titlesize': 15,
     # 'figure.titlesize': 20,
 })
@@ -99,7 +101,7 @@ if __name__ == '__main__':
             for iz in range(nz):
                 score_values[ix, irep, iz] = results[ix][irep][iz][score]
 
-    fig, ax = plt.subplots(1,1, figsize=(6,4), num=varying_param)
+    fig, ax = plt.subplots(1,1, figsize=(7,4), num=varying_param)
     perc = 20
     transparency = 0.2
     cm = colormaps.get_cmap("jet")
@@ -124,17 +126,17 @@ if __name__ == '__main__':
         plot_perf(alphas, score_values[:,:,iz], color, label, perc=perc, alpha=transparency, ax=ax, direction=-1)
     ax.grid()
     ax.set_ylabel(score_names[score])
-    ax.set_xlabel(r"$\alpha$")
+    ax.set_xlabel(r"$\alpha$", fontsize=fs+4)
     if score=="time":
         ax.set_yscale('log')
     else:
         ax.set_ylim(-0.05,1.05)
 
     if varying_param=="method_align":
-        right = 0.6
+        right = 0.57
     else:
         right = 0.7
-    plt.subplots_adjust(left=0.15, bottom=0.2, right=right, top=0.95)  # Increase right margin
+    plt.subplots_adjust(left=0.15, bottom=0.2, right=right, top=0.99)  # Increase right margin
     plot_bottom = ax.get_position().y0
     plot_height = ax.get_position().height
     handles, labels = ax.get_legend_handles_labels()

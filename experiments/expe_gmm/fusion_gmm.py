@@ -8,6 +8,8 @@ from sklearn.metrics import adjusted_rand_score, adjusted_mutual_info_score
 from pasco.utils import SimpleClustering, plot_perf
 import time
 
+np.random.seed(2024)
+
 plt.rcParams.update({
     "text.usetex": True})
 
@@ -22,20 +24,20 @@ centers = np.array([[0, 1],
 
 X, y = make_blobs(n_samples=nb_samples, centers=centers,
                   cluster_std=0.25, shuffle=False)
-nt_total = 30
+nt_total = 15
 all_clustering = np.zeros((nt_total, n))
 ari_two = np.zeros((nt_total, ))
 ari_three = np.zeros((nt_total, ))
 
 for i in range(nt_total):
-    K = np.random.randint(2, 15)
+    K = np.random.randint(2, 10)
     sp = SimpleClustering(K=K, random_state=None)
     sp.fit(X, y)
     labels = sp.predict(X)
     all_clustering[i] = labels
     ari_two[i] = adjusted_rand_score(labels, y)
 
-n_repet = 10
+n_repet = 100
 output_nb_clusters = 3
 
 fusion_methods = [
@@ -76,7 +78,7 @@ for l, metric_to_show in enumerate(['ARI', 'AMI']):
                                                                    all_partitions[method, nt, j])
 
 
-fs = 19
+fs = 24
 
 metric_to_show = 'AMI'
 method_to_show = 'ot'
@@ -84,20 +86,20 @@ names_to_plot = {'ot': 'ot', 'lin_reg': 'lin-reg', 'many_to_one': 'many-to-one'}
 xx = range(1, nt_total + 1)
 perc = 20
 
-fig, ax = plt.subplots(1, 5, figsize=(22, 5), layout="constrained")
+fig, ax = plt.subplots(1, 4, figsize=(22, 6), layout="constrained", width_ratios=[4,4,4,5], )
 ax[0].scatter(X[:, 0], X[:, 1], c=[cmap(y[i]) for i in range(len(y))], alpha=1,
               edgecolor='k')
 ax[0].set_xticks([])
 ax[0].set_yticks([])
-ax[0].set_title('Dataset', fontsize=fs+2)
-for i in range(1, 3):
+ax[0].set_title('Dataset', fontsize=fs+4)
+for i in range(1, 2):
     colors = [cmap(int(label)) for label in all_clustering[i]]
     ax[i].scatter(X[:, 0], X[:, 1], c=colors, alpha=1,
                   edgecolor='k')
     ax[i].set_xticks([])
     ax[i].set_yticks([])
     ax[i].set_title(
-        'Partition n°{}/{}'.format(i, nt_total), fontsize=fs+2)
+        'Partition n°{}/{}'.format(i, nt_total), fontsize=fs+4)
 
 fused_partition = all_partitions[method_to_show, nt_total-1, 0]
 perf = choice_metric[metric_to_show](
@@ -110,7 +112,7 @@ ax[i+1].scatter(X[:, 0], X[:, 1],
 ax[i+1].set_xticks([])
 ax[i+1].set_yticks([])
 ax[i+1].set_title('Fused partition ({2}) \n {1} = {0:.3f}'.format(
-    perf, metric_to_show, names_to_plot[method_to_show]), fontsize=fs+2)
+    perf, metric_to_show, names_to_plot[method_to_show]), fontsize=fs+4)
 
 to_show = ['ot',
            'lin_reg',
@@ -124,7 +126,7 @@ for c, method in enumerate(to_show):
         metric_fusion,
         color=cmap(c),
         label=names_to_plot[method],
-        ax=ax[4],
+        ax=ax[3],
         direction=1,
         markersize=7,
         lw=3,
@@ -134,7 +136,7 @@ kmeans = KMeans(3)
 labels = kmeans.fit_predict(X)
 
 metric_full = choice_metric[metric_to_show](y, labels)
-ax[4].hlines(
+ax[3].hlines(
     y=metric_full,
     xmin=0,
     xmax=nt_total,
@@ -142,33 +144,33 @@ ax[4].hlines(
     color='k',
     linestyle='dashed',
     label='k-means')
-ax[4].grid()
-ax[4].set_ylim([0.1, 1.05])
-ax[4].set_xlabel(r'number of partitions $R$', fontsize=fs)
-ax[4].set_ylabel('{}'.format(metric_to_show), fontsize=fs)
-ax[4].set_xlim([1, nt_total + 1])
-ax[4].tick_params(axis='both', which='major', labelsize=fs - 2)
-ax[4].tick_params(axis='both', which='minor', labelsize=fs - 2)
+ax[3].grid()
+ax[3].set_ylim([0.1, 1.05])
+ax[3].set_xlabel(r'$R$', fontsize=fs+2)
+ax[3].set_ylabel('{}'.format(metric_to_show), fontsize=fs+2)
+ax[3].set_xlim([1, nt_total + 1])
+ax[3].tick_params(axis='both', which='major', labelsize=fs)
+ax[3].tick_params(axis='both', which='minor', labelsize=fs)
 
-ax[4].legend(loc='upper center', bbox_to_anchor=(0.5, 1.22),
+ax[3].legend(loc='upper center', bbox_to_anchor=(0.5, 1.22),
              ncol=2, fancybox=False, shadow=True,
-             fontsize=fs)
+             fontsize=fs+2)
 plt.savefig('../data/plots/gmm/gmm_fusion_perf.pdf')
 
-fs = 13
-to_show = ['ot', 'lin_reg', 'many_to_one']
-fig, ax = plt.subplots(figsize=(10, 4))
-timings = []
-colors = []
-err = []
-for c, method in enumerate(to_show):
-    timings.append(res_timings[method].mean())
-    colors.append(cmap(c))
-    err.append(res_timings[method].std())
-ax.bar(to_show, timings, yerr=err, color=colors)
-ax.set_yscale('log')
-ax.set_ylabel('time (in sec)', fontsize=fs)
-ax.grid()
-ax.tick_params(axis='both', which='major', labelsize=fs)
-ax.tick_params(axis='both', which='minor', labelsize=fs)
-fig.suptitle('Averaged time fusion', fontsize=fs+2)
+# fs = 13
+# to_show = ['ot', 'lin_reg', 'many_to_one']
+# fig, ax = plt.subplots(figsize=(10, 4))
+# timings = []
+# colors = []
+# err = []
+# for c, method in enumerate(to_show):
+#     timings.append(res_timings[method].mean())
+#     colors.append(cmap(c))
+#     err.append(res_timings[method].std())
+# ax.bar(to_show, timings, yerr=err, color=colors)
+# ax.set_yscale('log')
+# ax.set_ylabel('time (in sec)', fontsize=fs)
+# ax.grid()
+# ax.tick_params(axis='both', which='major', labelsize=fs)
+# ax.tick_params(axis='both', which='minor', labelsize=fs)
+# fig.suptitle('Averaged time fusion', fontsize=fs+2)

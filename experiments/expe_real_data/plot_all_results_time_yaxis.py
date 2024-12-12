@@ -14,7 +14,7 @@ plt.rcParams.update({
     "text.usetex": True,
     "font.family": "Palatino",
     "font.serif": ["Palatino"],
-    "font.size": 20,
+    "font.size": 26,
     # 'axes.titlesize': 16,
     # 'figure.titlesize': 20,
 })
@@ -82,10 +82,10 @@ if __name__ == '__main__':
     bottom = 0.12
     fig, axss = plt.subplots(
         len(solvers_to_plot), len(perfs), 
-        figsize=(18, 20),
+        figsize=(18, 22),
         sharey=True, sharex="col")
-    plt.subplots_adjust(top= 0.98, bottom=bottom, left=0.1, right=0.95, 
-                        hspace=0.15, wspace=0.2)
+    plt.subplots_adjust(top= 0.99, bottom=bottom, left=0.11, right=0.99, 
+                        hspace=0.12, wspace=0.12)
     for i, (axs,solver) in enumerate(zip(axss,solvers_to_plot)):
         for jax, (ax, perf) in enumerate(zip(axs, perfs)):
 
