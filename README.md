@@ -2,14 +2,7 @@
 
 This repository contains the code to run PASCO (PArallel Structured COarsening): an overlay to speed up graph clustering algorithms. It is associated to the paper: soon to come.
 
-# Libraries 
-
-- `networkx`
-- `numpy`
-- `scipy`
-- `sklearn` 
-- `sknetwork` (only for Louvain)
-- `graphtools` (only for MDL)
+# Installation
 
 To run PASCO, follow the instruction below. \
 In a terminal, go into the `PASCO` folder, and run the following commands : 
@@ -25,5 +18,7 @@ To do so, run the following command from the `PASCO` folder.
 - `conda activate pasco`
 - `pip install matplotlib networkx scikit-learn POT pygsp scikit-network leidenalg pandas`
 - `pip install -e .`
+
+# Tutorial 
 
 Once the conda environment is installed, you can check our tutorial notebook `tutorial.ipynb` to see how to simply use PASCO (with clustering algorithm already implemented, or your own clustering algorithm). 
