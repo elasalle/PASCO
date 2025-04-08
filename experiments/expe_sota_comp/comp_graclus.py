@@ -33,7 +33,7 @@ if __name__ == '__main__':
 
     #compute pasco
     rho = 10 # reduction factor (the coarsened graph will have a size rho times smaller)
-    R = 4 # number of repetitions of the coarsening. R should be kept below the number of CPUs so that all clusterings can be computed in one batch.
+    R = 10 # number of repetitions of the coarsening. R should be kept below the number of CPUs so that all clusterings can be computed in one batch.
     solver = "SC" # we use SC to compute the partition of the coarsened graphs.
 
     ti = time()
