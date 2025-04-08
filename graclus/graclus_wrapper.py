@@ -17,7 +17,8 @@ def read_clustering_output(filepath: Path) -> Dict[int, int]:
     with open(filepath, 'r') as f:
         return {i: int(line.strip()) for i, line in enumerate(f)}
 
-graclus_path = "C:\\Users\\adminuser\\Documents\\GitHub\\PASCO\\graclus\\graclus1.2\\graclus.exe"
+# graclus_path = "C:\\Users\\adminuser\\Documents\\GitHub\\PASCO\\graclus\\graclus1.2\\graclus.exe"
+graclus_path = "/projects/users/elasalle/PASCO/graclus/graclus1.2/graclus.exe"
 def run_graclus(graph: nx.Graph, num_clusters: int, graclus_exe_path: str = graclus_path) -> Dict[int, int]:
     with tempfile.TemporaryDirectory() as tmpdir:
         tmpdir_path = Path(tmpdir)
