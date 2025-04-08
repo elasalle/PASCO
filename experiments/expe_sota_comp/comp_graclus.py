@@ -8,6 +8,9 @@ import networkx as nx
 from sklearn.metrics.cluster import adjusted_mutual_info_score as ami
 from sklearn.preprocessing import LabelEncoder    
 from time import time
+
+import sys
+print(sys.path)
 from graclus.graclus_wrapper import run_graclus
 
 import matplotlib.pyplot as plt
