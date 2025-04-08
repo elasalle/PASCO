@@ -10,7 +10,7 @@ from sklearn.preprocessing import LabelEncoder
 from time import time
 
 import sys
-print(sys.path)
+sys.path.append('/projects/users/elasalle/PASCO/')
 from graclus.graclus_wrapper import run_graclus
 
 import matplotlib.pyplot as plt
