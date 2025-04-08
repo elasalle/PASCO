@@ -5,6 +5,10 @@ if gt_exists:
 im_exists = find_spec("infomap") is not None
 if im_exists:
     from infomap import Infomap
+graclus_exists = find_spec("torch_cluster")
+if graclus_exists:
+    import torch
+    from torch_cluster import graclus_cluster
 import numpy as np
 import networkx as nx
 import scipy.sparse as sp
@@ -12,8 +16,7 @@ from sklearn.preprocessing import LabelEncoder
 from sklearn.cluster import SpectralClustering
 from CSC.compressed_spectral_clustering import CSC
 from sknetwork.clustering import Louvain
-# import torch
-# from torch_cluster import graclus_cluster
+
 import leidenalg as la
 import igraph as ig
 
@@ -73,16 +76,16 @@ def leiden_clustering(G):
     partition = LabelEncoder().fit_transform(np.array(partition))
     return partition
 
-
-# def graclus_clustering(G):
-#     adj = _ckeck_graph_type(G)
-#     Acoo = adj.tocoo()
-#     row = torch.tensor(Acoo.row, dtype=torch.int64)
-#     col = torch.tensor(Acoo.col, dtype=torch.int64)
-#     weight = torch.tensor(Acoo.data)
-#     cluster = graclus_cluster(row, col, weight)
-#     partition = LabelEncoder().fit_transform(cluster.numpy())
-#     return partition
+if graclus_exists:
+    def graclus_clustering(G):
+        adj = _ckeck_graph_type(G)
+        Acoo = adj.tocoo()
+        row = torch.tensor(Acoo.row, dtype=torch.int64)
+        col = torch.tensor(Acoo.col, dtype=torch.int64)
+        weight = torch.tensor(Acoo.data)
+        cluster = graclus_cluster(row, col, weight)
+        partition = LabelEncoder().fit_transform(cluster.numpy())
+        return partition
 
 
 if gt_exists:
